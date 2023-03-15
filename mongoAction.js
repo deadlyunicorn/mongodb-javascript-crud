@@ -268,4 +268,101 @@ const aggregateFunction = async () =>{
 
 }
 
-aggregateFunction();
+//aggregateFunction();
+
+
+const Test = async () => {
+  try{
+    await client.connect();
+    await client.db('sample_mflix').collection('movies')
+    .aggregate([{$project:{title:1,_id:0}}])
+    .toArray()
+    .then(value=>{console.log(value[1]['title'])});
+  }
+  catch(error){console.log(error);}
+  finally{client.close();}
+}
+
+//Test();
+
+
+//Create index for more efficient sorts
+
+const IndexCreate = async () => {
+  try{
+    await client.connect();
+    await client.db('sample_mflix').collection('movies')
+    .createIndex({title:1}).then((returned)=>console.log(returned))
+  }
+  catch(error){console.log(error);}
+  finally{client.close();}
+}
+
+//IndexCreate();
+
+
+//Checking if we use indeces.
+
+const Explain = async () => {
+  try{
+    await client.connect();
+    await client.db('sample_mflix').collection('movies')
+    .indexes()
+    .then(returnedVal=>{console.log(returnedVal)})
+
+  }
+  catch(error){console.log(error);}
+  finally{client.close();}
+}
+
+//Explain();
+
+
+
+
+///
+const Skip = async () => {
+  try{
+    await client.connect();
+    await client.db('sample_mflix').collection('movies')
+    .aggregate([
+      {$project:{title:1,_id:0}},
+      {$sort:{title:1}},
+      {$skip:0},
+      {$limit:200}
+    ]).toArray()
+    .then(returnedVal=>{console.dir(returnedVal,{'maxArrayLength': null})})
+
+  }
+  catch(error){console.log(error);}
+  finally{client.close();}
+}
+
+//Skip();
+
+
+//Regex
+
+const Regex = async () => {
+  try{
+    await client.connect();
+    await client.db('sample_mflix').collection('movies')
+    .aggregate([
+
+      {$project:{title:1,_id:0}},
+      {$sort:{title:1}},
+      {$match:{
+        title:{$regex:/^b/,$options:'i'}
+      }}, //match should be before limit.
+      
+      {$count:'title'} //display how many entries start with A
+    ]).toArray()
+    .then(returnedVal=>{console.log(returnedVal)})
+
+  }
+  catch(error){console.log(error);}
+  finally{client.close();}
+}
+
+Regex();
+
